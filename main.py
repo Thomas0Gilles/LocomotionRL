@@ -5,18 +5,31 @@ Created on Sun Feb 24 17:23:01 2019
 @author: tgill
 """
 import gym
+from gym.wrappers import Monitor
+import pybullet_envs
 import numpy as np
 
 from agents.q_learners import QLearner
 from agents.deep_learners import DDPG, NAF, DQN
 from utils import ShowVariableLogger
+from envs import HalfCheetahEnv
+import matplotlib.pyplot as plt
 
-ENV = gym.make('HalfCheetah-v2')
+#ENV = gym.make('HalfCheetahBulletEnv-v0')
+#ENV = gym.make('Walker2DBulletEnv-v0')
+#ENV = gym.make('Walker2d-v2')
+#ENV = gym.make('HalfCheetah-v2')
+ENV = HalfCheetahEnv()
+from gym.wrappers.time_limit import TimeLimit
+ENV = TimeLimit(ENV, max_episode_steps=1000)
+ENV.render(mode="human")
 
 #agent = QLearner(env=ENV,
 #                 logger=ShowVariableLogger(average_window=100),
 #                 boxes_resolution=2)
 #
+logger=ShowVariableLogger(average_window=100)
+
 agent = DDPG(env=ENV,
                     logger=ShowVariableLogger(average_window=1),
                      n_layers_actor=2,
@@ -25,12 +38,25 @@ agent = DDPG(env=ENV,
                      n_units_critic=300,
                     )
 
+##agent = DQN(env=ENV,
+##            logger=ShowVariableLogger(average_window=1))
+#
 
-#agent = DQN(env=ENV,
-#            logger=ShowVariableLogger(average_window=1))
+rewards = agent.test(nb_episodes=10, visualize=True)
 
-for i in range(10):
-    hist_train = agent.train(nb_episodes=100000, visualize=False, verbose=1, nb_max_episode_steps=1000)
-    rewards = agent.test(nb_episodes=3, visualize=True)
+tr_ep_rewards=[]
+ep_rewards=[]
 
-print("Mean reward", np.mean(rewards.history['episode_reward']))
+
+for i in range(100):
+    print("Iteration", i)
+    hist_train = agent.train(nb_episodes=100000, visualize=False, verbose=1, nb_max_episode_steps=500)
+    tr_ep_rewards.append(np.mean(hist_train.history['episode_reward']))
+    for rew in hist_train.history['episode_reward']:
+        logger.log('Rewards', rew)
+    #rewards = agent.test_render(nb_episodes=3, visualize=True)
+    rewards = agent.test(nb_episodes=10, visualize=True)
+    ep_rewards.append(np.mean(rewards.history['episode_reward']))
+    #ENV.render(mode="human", close=True)
+
+#print("Mean reward", np.mean(rewards.history['episode_reward']))

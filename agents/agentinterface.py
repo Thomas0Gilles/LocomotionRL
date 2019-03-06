@@ -26,6 +26,8 @@ class Agent:
         total_reward = 0
         done = False
         c = 0
+        if visualize:
+            self.env.render()
         while not done and c<max_steps:
             action = self.act(state, explore)
             new_state, reward, done, info = self.env.step(action)
@@ -51,8 +53,10 @@ class Agent:
         print('Mean Episodic Time :{0}s'.format((time.time()-t0)/nb_episodes))
 
 
-    def test(self, nb_episodes=100, visualize=True):
+    def test_render(self, nb_episodes=100, visualize=True):
         rewards = []
+        if visualize:
+            self.env.render()
         for _ in range(nb_episodes):
             rewards.append(self.episode(self.env.reset(), explore=False, visualize=visualize))
         print('All Rewards :', rewards)
@@ -71,6 +75,8 @@ class KerasRLAgent(Agent):
         return history
         
     def test(self, nb_episodes, visualize=True, verbose=1):
+        if visualize:
+            self.env.render()
         history = self.agent.test(self.env, nb_episodes=nb_episodes, visualize=visualize, verbose=verbose)
         print('Mean', np.mean(history.history['episode_reward']))
         print('Std', np.std(history.history['episode_reward']))
