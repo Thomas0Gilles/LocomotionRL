@@ -10,7 +10,7 @@ import pybullet_envs
 import numpy as np
 
 from agents.q_learners import QLearner
-from agents.deep_learners import DDPG, NAF, DQN
+from agents.deep_learners import DDPG, NAF, DQN, MACEAgent, MACEDDPG
 from utils import ShowVariableLogger
 from envs import HalfCheetahEnv
 import matplotlib.pyplot as plt
@@ -19,6 +19,8 @@ import matplotlib.pyplot as plt
 #ENV = gym.make('Walker2DBulletEnv-v0')
 #ENV = gym.make('Walker2d-v2')
 #ENV = gym.make('HalfCheetah-v2')
+#ENV = gym.make('InvertedPendulum-v2')
+
 ENV = HalfCheetahEnv()
 from gym.wrappers.time_limit import TimeLimit
 ENV = TimeLimit(ENV, max_episode_steps=1000)
@@ -37,20 +39,22 @@ agent = DDPG(env=ENV,
                      n_layers_critic=2,
                      n_units_critic=300,
                     )
-
+#agent = MACEAgent(env=ENV)
+#agent = MACEDDPG(env=ENV)
 ##agent = DQN(env=ENV,
 ##            logger=ShowVariableLogger(average_window=1))
 #
 
-rewards = agent.test(nb_episodes=10, visualize=True)
+#rewards = agent.test(nb_episodes=10, visualize=True)
 
 tr_ep_rewards=[]
 ep_rewards=[]
 
-
+#.agent.agent.nb_steps_warmup=50000
 for i in range(100):
     print("Iteration", i)
-    hist_train = agent.train(nb_episodes=100000, visualize=False, verbose=1, nb_max_episode_steps=500)
+    hist_train = agent.train(nb_episodes=100000, visualize=False, verbose=1, nb_max_episode_steps=1000)
+    #agent.agent.nb_steps_warmup=0
     tr_ep_rewards.append(np.mean(hist_train.history['episode_reward']))
     for rew in hist_train.history['episode_reward']:
         logger.log('Rewards', rew)

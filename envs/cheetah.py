@@ -5,10 +5,13 @@ import scipy
 
 class HalfCheetahEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self):
-        mujoco_env.MujocoEnv.__init__(self, '/Users/tgill/OneDrive/Documents/GD_AI/LocomotionRL-master/envs/assets/half_cheetah.xml', 5)
+        self.res=20
+        self.n_points=200
+        self.has_terrain = False
+        mujoco_env.MujocoEnv.__init__(self, '/Users/tgill/OneDrive/Documents/GD_AI/LocomotionRL-master/envs/assets/half_cheetah_hfield.xml', 5)
         utils.EzPickle.__init__(self)
-        self.terrain = self.height2terrain()
-        self.res = 20
+#        self.terrain = self.height2terrain()
+#        self.has_terrain = True
 
     def step(self, action):
         xposbefore = self.sim.data.qpos[0]
@@ -28,10 +31,14 @@ class HalfCheetahEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         return height_map
 
     def _get_obs(self):
-
+        if self.has_terrain:
+            hmap = self._get_hmap()
+        else:
+            hmap = np.zeros(self.n_points)
         return np.concatenate([
             self.sim.data.qpos.flat[1:],
             self.sim.data.qvel.flat,
+           # hmap,
         ])
 
     def reset_model(self):
@@ -45,8 +52,8 @@ class HalfCheetahEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         
     def height2terrain(self):
         hfield = self.sim.model.hfield_data
-        print()
+        print(hfield)
         hfield = hfield.reshape(self.sim.model.hfield_nrow[0], self.sim.model.hfield_ncol[0])
         x_size, y_size = self.sim.model.hfield_size[0][:2]
-        terrain = scipy.misc.imresize(hfield, (int(x_size)*20, int(y_size)*20))
+        terrain = scipy.misc.imresize(hfield, (int(x_size)*self.res, int(y_size)*self.res))
         return terrain
