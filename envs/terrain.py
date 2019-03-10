@@ -69,11 +69,13 @@ def generate_holes(width, height, nholes, width_hole=5):
     return x, y, hfield
 
 #generate random terrain with holes, hurdles, slopes 
-def generate_random_terrain(width, height, nholes, nhurdles, is_slope, nslopes, slope):
+def generate_random_terrain(width, height, is_hole, nholes, is_hurdle, nhurdles, is_slope, nslopes, slope):
     '''
     @param width float, terrain width
     @param height float, terrain height
+    @param is_hole bool, whether to create holes
     @param nholes int, #holes to gen. 
+    @param is_hurdle bool, whether to create hurdles
     @param nhurdles int, #hurdles to gen.
     @param is_slope bool, whether the terrain is orientated or flat.
     @param nslopes int, #slopes to gen.
@@ -114,16 +116,19 @@ def generate_random_terrain(width, height, nholes, nhurdles, is_slope, nslopes, 
             lim_sup=slope_limits[i+1]
     
     #generate holes and hurdles
-    holes = np.random.randint(0,x.shape[0],nholes)
-    hurdles = np.random.randint(0,x.shape[0],nhurdles)
+    if is_hole:
+        holes = np.random.randint(0,x.shape[0],nholes)
+        for i in range(nholes):
+            hole=holes[i]
+            hfield[hole-1:hole+1,:]+=-20
     
-    for i in range(nholes):
-        hole=holes[i]
-        hfield[hole-1:hole+1,:]+=-20
-    
-    for i in range(nhurdles):
-        hurdle=hurdles[i]
-        hfield[hurdle-1:hurdle+1]+=5
+    if is_hurdle:
+        hurdles = np.random.randint(0,x.shape[0],nhurdles)
+        for i in range(nhurdles):
+            hurdle=hurdles[i]
+            hfield[hurdle-1:hurdle+1]+=3
+            
+        hfield=hfield-100
     
     return x, y, hfield
 
@@ -193,7 +198,7 @@ def save_texture(x, y, hfield, fname, path=None):
 def demo():
     #x, y, hfield = generate_hills(60,60,10)
     #x, y, hfield = generate_holes(60,10,10,5)
-    x, y, hfield = generate_random_terrain(60,60,10,10,True,10,0.1)
+    x, y, hfield = generate_random_terrain(60,60,True,10,True,10,True,5,0.1)
     save_heightfield(x,y,hfield,'random_terrain_test7.png')
     
 demo()
